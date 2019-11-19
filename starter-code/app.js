@@ -7,10 +7,10 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
 const serveFavicon = require('serve-favicon');
+const mongoose = require("mongoose");
 const session = require('express-session');
+const MongoStore = require("connect-mongo")(session);
 const passport = require("passport");
-const indexRouter = require('./routes/index');
-const passportRouter = require('./routes/passport');
 
 const app = express();
 
@@ -33,19 +33,26 @@ app.use(
 app.use(serveFavicon(join(__dirname, 'public/images', 'favicon.ico')));
 app.use(express.static(join(__dirname, 'public')));
 
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: true }
+  cookie: { maxAge: 60000 },
+  resave: true,
+  saveUninitialized: false,
+  sameSite: true,
+  httpOnly: true,
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection,
+    ttl: 24 * 60 * 60 // 1 day
+  })
 }));
 
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', indexRouter);
-app.use('/auth', passportRouter);
+app.use('/', require('./routes/index'));
+app.use('/auth', require('./routes/auth'));
 
 // Catch missing routes and forward to error handler
 app.use((req, res, next) => {

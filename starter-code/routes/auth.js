@@ -15,7 +15,7 @@ router.get("/sign-in", (req, res) => {
   res.render("passport/signin");
 });
 
-router.post("/sign-in", passport.authenticate("local", {
+router.post("/sign-in", passport.authenticate("signin", {
   successRedirect: '/',
   failureRedirect: '/auth/sign-in'
 }));
@@ -24,34 +24,10 @@ router.get("/sign-up", (req, res) => {
   res.render("passport/signup");
 });
 
-router.post("/sign-up", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-
-  User.findOne({ email }).then(user => {
-      if (!user) {
-        bcrypt.hash(password, 10).then(hash => {
-            console.log(hash);
-            return User.create({
-                email: email,
-                passwordHash: hash
-            });
-        })
-        .then(createdUser => {
-          res.locals.user = createdUser;
-          res.redirect("/");
-        })
-        .catch(error => {
-            throw new Error(error);
-        });
-    } else {
-      res.locals.user = user;
-    }
-  })
-  .catch(error => {
-    throw new Error(error);
-  });
-});
+router.post("/sign-up", passport.authenticate("signup", {
+  successRedirect: '/',
+  failureRedirect: '/auth/sign-up'
+}));
 
 
 
