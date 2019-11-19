@@ -53,10 +53,10 @@ const initiate = () => {
 mongoose
   .connect(URI, {
     useNewUrlParser: true,
-    useCreateIndex: true,
     useUnifiedTopology: true
   })
   .then(() => {
+    console.log("Connected to db " + URI);
     debug(`Database connected to URI "${URI}"`);
     initiate();
   })

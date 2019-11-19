@@ -7,7 +7,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
 const serveFavicon = require('serve-favicon');
-
+const session = require('express-session');
+const passport = require("passport");
 const indexRouter = require('./routes/index');
 const passportRouter = require('./routes/passport');
 
@@ -32,8 +33,19 @@ app.use(
 app.use(serveFavicon(join(__dirname, 'public/images', 'favicon.ico')));
 app.use(express.static(join(__dirname, 'public')));
 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+}));
+
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use('/', indexRouter);
-app.use('/', passportRouter);
+app.use('/auth', passportRouter);
 
 // Catch missing routes and forward to error handler
 app.use((req, res, next) => {
